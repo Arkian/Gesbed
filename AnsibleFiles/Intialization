@@ -1,0 +1,60 @@
+To resolve the change in IP address while initilizing Kubernetes
+==================================================================
+
+FOR MASTER NODE
+------------------
+
+$systemctl stop kubelet docker
+$cd /etc/
+
+# backup old kubernetes data
+$mv kubernetes kubernetes-backup
+$mv /var/lib/kubelet /var/lib/kubelet-backup
+
+# restore certificates
+$mkdir -p kubernetes
+$cp -r kubernetes-backup/pki kubernetes
+$rm kubernetes/pki/{apiserver.*,etcd/peer.*}
+
+$systemctl start docker
+
+# reinit master with data in etcd
+# add --kubernetes-version, --pod-network-cidr and --token options if needed
+$kubeadm init --ignore-preflight-errors=DirAvailable--var-lib-etcd
+
+# update kubectl config
+$cp kubernetes/admin.conf ~/.kube/config
+
+# wait for some time and delete old node
+$sleep 120
+$kubectl get nodes --sort-by=.metadata.creationTimestamp
+$kubectl delete node $(kubectl get nodes -o jsonpath='{.items[?(@.status.conditions[0].status=="Unknown")].metadata.name}')
+
+# check running pods
+$kubectl get pods --all-namespaces
+
+
+FOR WORKER NODE
+----------------------------
+# The followings must to be executed on Master node.
+
+# For sha256 has value
+$openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+
+# For token list
+# if there is no active tocken*/
+$kubeadm token create --print-join-command 
+
+# to get the list of active tokens
+$kubeadm tokens list
+
+# The following must to be executed on worker nodes
+$sudo kubeadm reset
+
+# For joing the cluster
+$sudo kubeadm join --discovery-token <token-value> --discovery-token-ca-cert-hash sha256:<hash value> <ip of master node>:6443
+
+
+
+
+

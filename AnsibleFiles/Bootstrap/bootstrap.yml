@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    # Configure ansible-hosts file
+    - name: Add our ansible hosts setup
+      blockinfile:
+        dest: /etc/ansible/hosts
+        marker: "# {mark} ANSIBLE MANAGED BLOCK HOSTS"
+        block: |
+          # Ungrouped
+          pico1-[0:9]
+
+          # cluster node
+          [cluster]
+          pico1-[0:9]
+
+          # master
+          [master]
+          pico1-0
+
+          # worker
+          [worker]
+          pico1-[1:9]

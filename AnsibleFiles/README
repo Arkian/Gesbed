@@ -1,0 +1,31 @@
+Usage:
+-First update the host names and IPs in both /etc/hosts and /etc/ansible/hosts:
+*You can do it manualy or can modify the "bootstrap.yml" and then run it with ansible ($ansible-playbook bootstrap.yml)
+
+-Then run the following command (to restart):
+ $./restartAllNodes.sh (you already have it in HOME of pc0, but need to update it if you have changed the host names)
+
+-Then run the following commands to update the keys.
+$sh genKeys.sh
+$ssh pc0
+$exit
+
+-Then to test ansible: 
+$ansible all -m ping
+
+-Then run the following command to set IPtables: (This needs to be set based on the hosts names)
+$./setupIptablesKubernetes.sh
+
+-Then run the following to install docker+K8s on nodes:
+$ansible-playbook install_docker_k8s.yml 
+
+-To check if all nodes are connected correctly: 
+$kubectl get nodes
+
+- If you can not see the nodes, run $./restartAllNodes.sh and then run $./setupIptablesKubernetes.sh again
+
+-Another point: For turnning off the cluster run:
+$./picoStopAll.sh and then switch off the cluster (more safe ;-))
+
+
+

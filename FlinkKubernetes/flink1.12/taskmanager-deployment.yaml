@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-taskmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      component: taskmanager
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port:   '9249'
+      labels:
+        app: flink
+        component: taskmanager
+    spec:
+      containers:
+      - name: taskmanager
+        image: flink:1.12.0-scala_2.11
+        command: ["/bin/bash", "-c", "/opt/flink/bin/taskmanager.sh start-foreground -Djobmanager.rpc.address=jobmanager"]
+        ports:
+        - containerPort: 6122
+          name: rpc
+        livenessProbe:
+          tcpSocket:
+            port: 6122
+          initialDelaySeconds: 30
+          periodSeconds: 60
+        volumeMounts:
+        - name: flink-config-volume
+          mountPath: /opt/flink/conf
+        securityContext:
+          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      volumes:
+      - name: flink-config-volume
+        configMap:
+          name: flink-config
+          items:
+          - key: flink-conf.yaml
+            path: flink-conf.yaml
+          - key: log4j.properties
+            path: log4j.properties
+          - key: log4j-console.properties 
+            path: log4j-console.properties 
+          - key: log4j-cli.properties
+            path: log4j-cli.properties
+
+#        env:
+#        - name: SSH_USER
+#          value: "user1"
+#        - name: SSH_SUDO
+#          value: "ALL=(ALL) NOPASSWD:ALL"
+#        - name: PASSWORD
+#          value: "password"
+#        command: ["/bin/bash", "-c"]
+#        args: ["useradd $(SSH_USER); service sshd restart; echo $(SSH_USER):1234 | chpasswd; tail -f /dev/null"]
+
+

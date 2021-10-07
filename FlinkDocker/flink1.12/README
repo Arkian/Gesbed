@@ -1,0 +1,18 @@
+Usage:
+
+# Check whether 'flink' image is loaded 
+$docker images
+
+# If 'flink' image is not present 
+$tar -zxvf flink-1.12.0.tgz
+$./build.sh
+
+# Now 'flink' image is loaded to the master node. The same can be checked using the following command:
+$docker images
+
+
+# To copy the flink image to the Workers node, execute either 
+$./CopyImageToWorkers.sh
+
+# or, if the previous command did not work
+$./CopyFlinkImageToWorkers.sh

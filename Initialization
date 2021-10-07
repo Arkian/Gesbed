@@ -1,0 +1,117 @@
+Initialization:
+---------------
+Scanning the IP and MACs of RPIs:
+      sudo yum install arp-scan
+      sudo arp-scan --interface=enp0s31f6 10.1.10.0/22
+
+Connecting to picos:
+      ssh picocluster@10.1.10.240 (password: picocluster)
+      ./testAllNodes.sh (testing all nodes)
+
+First key generation:
+      ./genKeys.sh
+
+Changing user name:
+      sudo useradd -m tempuser -s /bin/bash
+      sudo passwd tempuser
+      sudo usermod -a -G sudo tempuser
+      logout
+      ssh tempuser@<IP address>
+      sudo usermod -l guru picocluster
+      sudo usermod -m -d /home/guru guru
+      Logout
+      ssh guru@<IP address>
+      sudo userdel tempuser
+
+How to change hostname/password:
+      sudo raspi-config
+      sudo nano /etc/hosts
+      Change host names to new ones
+
+How to set Static IP:
+      ip r | grep default (finding default router)
+      sudo nano /etc/resolv.conf (finding DNS server)
+      sudo nano /etc/dhcpcd.conf (add the followings) or /etc/network/interfaces
+      interface eth0
+      static ip_address=<AllocatedIP>/24
+      static routers=131.254.1.1
+      static domain_name_servers=131.254.130.100
+      sudo reboot
+      New username: guru
+      New Password: pico
+
+Other Initial tasks:
+      Resetting /etc/dhcpcd.conf
+      Changing “/etc/network/interfaces” to default
+      Changing wifi country in /etc/wp.../wp….conf
+      Enabling VNC
+
+For removing sudo password required:
+      sudo nano /etc/sudoers.d/010_pi-nopasswd
+      Change NOPASWD to PASSWD
+
+Working with Ansible on pico:
+      Update /etc/hosts based on new IPs
+      Update /etc/ansible/hosts based on new host names and IPs
+      Test ansible: $ansible all -m ping
+################################################
+
+Running Flink on Kubernetes on Pico:
+------------------
+
+To deploy the cluster:
+      cd workspace/FlinkKubernetes/
+      ./DeployflinkOnK8.sh
+
+To terminate the cluster:
+      ./TerminateFlinkOnK8.sh
+
+To check the details of a pods:
+      kubectl describe pods {name of pod}
+
+To forward Flink dashboard port:
+      kubectl get pods
+      kubectl port-forward {jobmanager-name} 8081:8081
+
+To see the dashboard:
+      Get IP and PORT with:     kubectl get svc flink-jobmanager-rest
+      Use http://<CLUSTERIP>:PORT
+      # <clusterIP>:8081 for intra-cluster and <master_nodeIP>:30081 for outside the cluster
+
+
+To submit a job:
+      1- Use dashboard and “submit job” tab
+      2- <FLINK PATH in master node>/bin/flink run -m <CLUSTERIP>:PORT -p <Para> -j <JOBPATH/job.jar>
+
+To rescale number of Task Managers:
+	kubectl scale --replicas={new value} deployment/flink-taskmanager
+
+################################################
+Installing/Running Prometheus:
+-------------------
+	docker pull prom/prometheus (On every node or use ansible)
+
+	cd /workspace/Prometheus
+	Run: ./DeploymentPrometheus.sh
+
+
+Installing/Running grafana:
+----------------
+	docker pull grafana/grafana (On every node or use ansible)
+	cd /workspace/Grafana
+	Run: ./DeployGrafana.sh
+
+
+Installing/Running Minio:
+-----------------
+	docker pull minio/minio (On every node or use ansible)
+How to copy minio image to worker nodes:
+	$docker save minio/minio | gzip | DOCKER_HOST=ssh://guru@pico1-1 docker load
+	cd /workspace/Minio
+	Run: ./DeployMinio.sh
+	Before using, add “state” bucket in Minio dashboard <NodeIP:9000>
+
+
+
+
+

@@ -1,0 +1,6 @@
+Gesbed:
+Gesbed (GEo-distributed Streaming testBED) which is a general Fog computing testbed augmented with additional components dedicated to evaluating DSP frameworks. 
+Gesbed manages the entire life cycle of a DSP application running over the Fog. It includes a realistic Fog infrastructure, with a container orchestration system, a DSP framework, and other required tools such as workload injection and advanced monitoring facilities. 
+Gesbed is built based on a variety of open-source tools connected to each other in a modular way. Therefore, each module/tool can be easily customized by the user or replaced with a new one.
+
+

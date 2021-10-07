@@ -1,0 +1,16 @@
+---
+- hosts: worker
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    - name: Copy Flink docker files to workers
+      copy:
+        src: /home/guru/workspace/FlinkDocker
+        dest: /home/guru/
+
+  tasks:
+    - name: Installing Flink docker image
+      shell: simpleBuild.sh >> FlkDkrlog.txt
+      args:
+        chdir: /home/guru/FlinkDocker_pico/
